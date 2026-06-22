@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diagnóstico Financiero | KARE Consultores</title>
+    <style>
+        :root {
+            /* Paleta de Colores Oficiales - KARE Consultores */
+            --kare-blue-deep: #0A2540;   /* Azul Marino Profundo Corporativo */
+            --kare-blue-light: #1D82CD;  /* Azul Brillante del Isotipo */
+            --kare-gray: #4A4A4A;        /* Gris de la Tipografía Principal */
+            --white: #ffffff;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            /* El degradado azul se mantiene intacto y limpio */
+            background: linear-gradient(135deg, var(--kare-blue-deep), var(--kare-blue-light));
+            color: var(--kare-gray);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* --- MARCAS DE AGUA CORPORATIVAS (Fondo removido, solo se visualiza el escudo calado) --- */
+        body::before, body::after {
+            content: "";
+            position: absolute;
+            background-image: url("https://cdn-h4.occ.com.mx/images/logos/300x300/fd/fda95ec284fc4708bec8fa8df6a06235.jpg");
+            background-repeat: no-repeat;
+            background-size: contain;
+            width: 320px;
+            height: 320px;
+            pointer-events: none;
+            z-index: 0;
+            /* Esta combinación de filtros extrae únicamente el escudo blanco, volviendo invisible el resto de la imagen */
+            filter: invert(1) brightness(1.8) contrast(1.2);
+            mix-blend-mode: screen; 
+            opacity: 0.06; /* Intensidad sutil y elegante para no saturar la vista */
+        }
+
+        /* Escudo KARE arriba a la izquierda */
+        body::before {
+            top: -5%;
+            left: -10%;
+            transform: rotate(-15deg);
+        }
+
+        /* Escudo KARE abajo a la derecha */
+        body::after {
+            bottom: -5%;
+            right: -10%;
+            transform: rotate(15deg);
+        }
+
+        /* CONTENEDOR PRINCIPAL OPTIMIZADO PARA MÓVILES */
+        .app-container {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 20px 50px rgba(10, 37, 64, 0.4);
+            width: 100%;
+            max-width: 500px;
+            padding: 35px 25px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* PANTALLA DE BIENVENIDA */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .welcome-screen img {
+            max-width: 160px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen h1 {
+            color: var(--kare-blue-deep);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+        }
+
+        .welcome-screen p {
+            font-size: 14px;
+            color: #627D98;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .features-list {
+            text-align: left;
+            background-color: #F4F7FA;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            color: var(--kare-blue-deep);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-item svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--kare-blue-light);
+            flex-shrink: 0;
+        }
+
+        /* Encabezado del Formulario */
+        .brand-header {
+            display: none;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-header img {
+            max-width: 110px;
+            height: auto;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: #EBF0F5;
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 10%;
+            background: linear-gradient(90deg, var(--kare-blue-light), var(--kare-blue-deep));
+            transition: width 0.4s ease;
+        }
+
+        /* Formulario Principal */
+        #kareForm {
+            display: none;
+            flex-direction: column;
+        }
+
+        /* Control de Páginas */
+        .step {
+            display: none;
+            animation: slideIn 0.4s ease-in-out;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        label.main-label {
+            display: block;
+            font-weight: 700;
+            color: var(--kare-blue-deep);
+            margin-bottom: 15px;
+            font-size: 17px;
+            line-height: 1.4;
+        }
+
+        .required {
+            color: #EF4E4E;
+            margin-left: 3px;
+        }
+
+        .instructions {
+            font-size: 12.5px;
+            color: #7B8794;
+            margin-top: -8px;
+            margin-bottom: 15px;
+        }
+
+        /* Inputs de Texto */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #E4E7EB;
+            border-radius: 12px;
+            font-size: 16px;
+            color: var(--kare-blue-deep);
+            background-color: #F8FAFC;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="email"]:focus {
+            border-color: var(--kare-blue-light);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(29, 130, 205, 0.15);
+            outline: none;
+        }
+
+        /* Opciones de Tarjeta */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-option {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border: 2px solid #E4E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            background-color: #F8FAFC;
+            transition: all 0.2s ease;
+        }
+
+        .card-option:hover {
+            border-color: var(--kare-blue-light);
+            background-color: #F0F7FD;
+        }
+
+        .card-option.selected {
+            border-color: var(--kare-blue-light);
+            background-color: #E1EFFB;
+        }
+
+        .card-option.selected span {
+            font-weight: 600;
+            color: var(--kare-blue-deep);
+        }
+
+        .card-icon {
+            width: 28px;
+            height: 28px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .card-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--kare-gray);
+            transition: fill 0.25s ease;
+        }
+
+        .card-option.selected .card-icon svg {
+            fill: var(--kare-blue-light);
+        }
+
+        /* Variante mini del escudo en las tarjetas de metas */
+        .card-icon img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.2s ease;
+        }
+
+        .card-option span {
+            font-size: 14.5px;
+            line-height: 1.3;
+        }
+
+        .card-option input {
+            margin-left: auto;
+            accent-color: var(--kare-blue-light);
+            transform: scale(1.2);
+        }
+
+        /* Bloques Informativos */
+        .insight-box {
+            background: linear-gradient(135deg, #EBF5FC, #E1EFFB);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--kare-blue-deep);
+            border: 1px solid rgba(29, 130, 205, 0.2);
+        }
+
+        .insight-box strong {
+            color: var(--kare-blue-light);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        /* Botones de Navegación */
+        .navigation-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 16px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--kare-blue-light), var(--kare-blue-deep));
+            color: var(--white);
+            flex: 2;
+        }
+
+        .btn-back {
+            background-color: #E4E7EB;
+            color: var(--kare-gray);
+            flex: 1;
+        }
+
+        /* Ajustes Móviles */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+
+            .app-container {
+                padding: 25px 18px;
+                border-radius: 14px;
+                box-shadow: 0 10px 30px rgba(10, 37, 64, 0.2);
+                margin-top: 10px;
+            }
+
+            .welcome-screen h1 {
+                font-size: 21px;
+            }
+
+            label.main-label {
+                font-size: 15.5px;
+            }
+
+            .card-option {
+                padding: 12px 14px;
+            }
+
+            .card-option span {
+                font-size: 13.5px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- PANTALLA DE BIENVENIDA -->
+        <div class="welcome-screen" id="welcome-screen">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW0A-hExTJRb8iWX2JKSDOBnQFbBFB4K0Bkg&s" alt="Logo KARE Consultores">
+            <h1>Descubre el Estado Actual de tu Salud Financiera</h1>
+            <p>Tómate 2 minutos para evaluar tus prioridades actuales. Al finalizar, diseñaremos una proyección estratégica adaptada a tus necesidades de protección y crecimiento.</p>
+            
+            <div class="features-list">
+                <div class="feature-item">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Análisis interactivo de 10 preguntas breves.
+                </div>
+                <div class="feature-item">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Detección de vulnerabilidades en tu presupuesto.
+                </div>
+                <div class="feature-item">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Acceso a un Diagnóstico Personalizado.
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-next" style="width: 100%;" onclick="startDiagnostic()">Comenzar Análisis</button>
+        </div>
+
+        <!-- ENCABEZADO DEL FORMULARIO -->
+        <div class="brand-header" id="brand-header">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW0A-hExTJRb8iWX2JKSDOBnQFbBFB4K0Bkg&s" alt="Logo KARE Consultores">
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- FORMULARIO MULTI-PÁGINA -->
+        <form id="kareForm" onsubmit="preventSubmit(event)">
+            
+            <div id="steps-container">
+                <!-- PASO 1: Nombre -->
+                <div class="step active" id="step-1">
+                    <label class="main-label" for="nombre">1. ¿Cómo te gustaría que nos dirijamos a ti? <span class="required">*</span></label>
+                    <input type="text" id="nombre" placeholder="Tu nombre completo" autocomplete="name">
+                </div>
+
+                <!-- PASO 2: Edad -->
+                <div class="step" id="step-2">
+                    <label class="main-label" for="edad">2. ¿Cuál es tu edad actual? <span class="required">*</span></label>
+                    <input type="number" id="edad" min="18" max="100" placeholder="Ej. 25" inputmode="numeric">
+                </div>
+
+                <!-- PASO 3: Dependientes -->
+                <div class="step" id="step-3">
+                    <label class="main-label">3. ¿Hay personas que dependan directamente de tus ingresos hoy en día? (Hijos, pareja, padres...) <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon">
+                                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            </div>
+                            <span>Sí, tengo personas a mi cargo.</span>
+                            <input type="radio" name="dependientes" value="si">
+                        </label>
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2.26c-.2-.17-.4-.35-.6-.53L12 14z"/></svg>
+                            </div>
+                            <span>No, mis ingresos son solo para mí.</span>
+                            <input type="radio" name="dependientes" value="no">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PASO 3.1: Cuántos Dependientes -->
+                <div class="step" id="step-3-1">
+                    <label class="main-label" for="cuantos_dependientes">3.1. ¿Cuántas personas dependen de ti? <span class="required">*</span></label>
+                    <input type="number" id="cuantos_dependientes" min="1" placeholder="Número de personas" inputmode="numeric">
+                </div>
+
+                <!-- PASO 4: Meta Urgente -->
+                <div class="step" id="step-4">
+                    <label class="main-label">4. Si pudieras blindar tus finanzas hoy mismo, ¿cuál sería la meta más urgente? <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><img src="https://cdn-h4.occ.com.mx/images/logos/300x300/fd/fda95ec284fc4708bec8fa8df6a06235.jpg" alt="KARE"></div>
+                            <span>Garantizar la estabilidad familiar si falto.</span><input type="radio" name="meta" value="fallecimiento">
+                        </label>
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><img src="https://cdn-h4.occ.com.mx/images/logos/300x300/fd/fda95ec284fc4708bec8fa8df6a06235.jpg" alt="KARE"></div>
+                            <span>Crear un fondo de ahorro a largo plazo.</span><input type="radio" name="meta" value="ahorro">
+                        </label>
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><img src="https://cdn-h4.occ.com.mx/images/logos/300x300/fd/fda95ec284fc4708bec8fa8df6a06235.jpg" alt="KARE"></div>
+                            <span>Contar con atención médica privada de nivel.</span><input type="radio" name="meta" value="medico">
+                        </label>
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><img src="https://cdn-h4.occ.com.mx/images/logos/300x300/fd/fda95ec284fc4708bec8fa8df6a06235.jpg" alt="KARE"></div>
+                            <span>Poner a trabajar mi dinero para patrimonio.</span><input type="radio" name="meta" value="invertir">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PASO 5: Hábito de Ahorro -->
+                <div class="step" id="step-5">
+                    <label class="main-label">5. ¿Actualmente tienes el hábito de destinar una parte de tus ingresos al ahorro? <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+                            <span>Sí, ahorro de manera constante u ocasional.</span><input type="radio" name="ahorro_habito" value="si">
+                        </label>
+                        <label class="card-option" onclick="selectCard(this)">
+                            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
+                            <span>No, actualmente se me dificulta guardar dinero.</span><input type="radio" name="ahorro_habito" value="no">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PASO 6: Herramientas -->
+                <div class="step" id="step-6">
+                    <label class="main-label">6. ¿Qué herramientas utilizas actualmente para guardar ese dinero? <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="herramientas" value="banco"><span>Cuenta bancaria tradicional</span></label>
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="herramientas" value="caja"><span>Caja popular / Cooperativa</span></label>
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="herramientas" value="inversion"><span>Fondos de inversión certificados</span></label>
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="herramientas" value="tanda"><span>Tandas o esquemas informales</span></label>
+                    </div>
+                </div>
+
+                <!-- PASO 6.1: Info S&P500 -->
+                <div class="step" id="step-6-info">
+                    <div class="insight-box">
+                        <strong>¿Sabías que?</strong> 
+                        Puedes realizar pequeños esfuerzos de ahorro y tener acceso a bolsas internacionales como el S&P 500. Además de blindar tu dinero en dólares, puedes acceder a rendimientos muy atractivos para hacer crecer tu patrimonio de forma constante.
+                    </div>
+                    <label class="main-label">7. ¿Qué es lo que más valoras al elegir un instrumento de ahorro? <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="valores" value="flexibilidad"><span>Flexibilidad (Retirar dinero ante emergencias)</span></label>
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="valores" value="rendimiento"><span>Rendimiento (Que gane más que la inflación)</span></label>
+                        <label class="card-option" onclick="toggleCheckboxCard(this)"><input type="checkbox" name="valores" value="practicidad"><span>Practicidad (Automatizado y sin trámites)</span></label>
+                    </div>
+                </div>
+
+                <!-- PASO 5-INFO-NO: Info Motivacional -->
+                <div class="step" id="step-5-info-no">
+                    <div class="insight-box" style="background: linear-gradient(135deg, #FFF5F5, #FFEBEB); border-color: rgba(239, 78, 78, 0.2);">
+                        <strong style="color: #EF4E4E;">El poder de dar el primer paso:</strong> 
+                        El hábito del ahorro es la única herramienta que nos permite afrontar imprevistos con absoluta tranquilidad. El error más común es creer que se necesita una fortuna para empezar. La verdadera clave no es la cantidad, sino la constancia. ¡Estamos a tiempo de activarlo juntos!
+                    </div>
+                    <p style="text-align: center; font-weight: 600; color: var(--kare-blue-deep); font-size: 14px;">Presiona "Continuar" para diseñar tu plan estratégico.</p>
+                </div>
+
+                <!-- PASO 8: Interés en la Estrategia -->
+                <div class="step" id="step-8">
+                    <label class="main-label">8. Si existiera una estrategia integral que proteja tu dinero de la inflación, te genere rendimientos competitivos y se adapte exactamente a tu presupuesto... ¿Te interesaría conocer cómo implementarla? <span class="required">*</span></label>
+                    <div class="options-grid">
+                        <label class="card-option" onclick="selectCard(this)"><input type="radio" name="interes" value="si"><span>Sí, me interesa ver alternativas.</span></label>
+                        <label class="card-option" onclick="selectCard(this)"><input type="radio" name="interes" value="no"><span>No por el momento.</span></label>
+                    </div>
+                </div>
+
+                <!-- PASO 9: Cantidad Mensual -->
+                <div class="step" id="step-9">
+                    <label class="main-label" for="cantidad">9. Sin afectar tu estilo de vida actual, ¿qué cantidad mensual estarías dispuesto a dirigir para este proyecto de protección y ahorro?</label>
+                    <input type="text" id="cantidad" placeholder="Ej. $2,000 MXN">
+                </div>
+
+                <!-- PASO 10: Correo Electrónico -->
+                <div class="step" id="step-10">
+                    <label class="main-label" for="correo">10. Para concluir y generar tu Diagnóstico Financiero de KARE Consultores, ¿nos compartes tu correo electrónico? <span class="required">*</span></label>
+                    <input type="email" id="correo" placeholder="nombre@ejemplo.com" autocomplete="email">
+                </div>
+            </div>
+
+            <!-- Botones de Navegación -->
+            <div class="navigation-container">
+                <button type="button" class="btn btn-back" id="btn-back" onclick="navigate(-1)" style="display: none;">Atrás</button>
+                <button type="button" class="btn btn-next" id="btn-next" onclick="navigate(1)">Continuar</button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        let stepsSequence = ['step-1', 'step-2', 'step-3', 'step-3-1', 'step-4', 'step-5', 'step-6', 'step-6-info', 'step-8', 'step-9', 'step-10'];
+        let currentIdx = 0;
+
+        function preventSubmit(e) { e.preventDefault(); }
+
+        function startDiagnostic() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('brand-header').style.display = 'block';
+            document.getElementById('kareForm').style.display = 'flex';
+            updateProgressBar();
+        }
+
+        function selectCard(element) {
+            const container = element.parentElement;
+            container.querySelectorAll('.card-option').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+        }
+
+        function toggleCheckboxCard(element) {
+            const input = element.querySelector('input');
+            input.checked = !input.checked;
+            element.classList.toggle('selected', input.checked);
+        }
+
+        function updateProgressBar() {
+            const progressPercent = ((currentIdx + 1) / stepsSequence.length) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+        }
+
+        function navigate(direction) {
+            const currentStepId = stepsSequence[currentIdx];
+            
+            if (direction === 1) {
+                if (currentStepId === 'step-1' && !document.getElementById('nombre').value.trim()) return alert('Por favor, ingresa tu nombre.');
+                if (currentStepId === 'step-2' && !document.getElementById('edad').value) return alert('Por favor, ingresa tu edad.');
+                if (currentStepId === 'step-3' && !document.querySelector('input[name="dependientes"]:checked')) return alert('Por favor, selecciona una opción.');
+                if (currentStepId === 'step-3-1' && !document.getElementById('cuantos_dependientes').value) return alert('Por favor, indica el número de personas.');
+                if (currentStepId === 'step-4' && !document.querySelector('input[name="meta"]:checked')) return alert('Por favor, selecciona tu meta urgente.');
+                if (currentStepId === 'step-5' && !document.querySelector('input[name="ahorro_habito"]:checked')) return alert('Por favor, responde si tienes el hábito del ahorro.');
+                if (currentStepId === 'step-6' && !document.querySelector('input[name="herramientas"]:checked')) return alert('Por favor, selecciona al menos una herramienta.');
+                if (currentStepId === 'step-6-info' && !document.querySelector('input[name="valores"]:checked')) return alert('Por favor, selecciona qué es lo que más valoras.');
+                if (currentStepId === 'step-8' && !document.querySelector('input[name="interes"]:checked')) return alert('Por favor, selecciona una opción.');
+                if (currentStepId === 'step-10' && !document.getElementById('correo').value.includes('@')) return alert('Por favor, ingresa un correo electrónico válido.');
+            }
+
+            document.getElementById(currentStepId).classList.remove('active');
+
+            if (currentStepId === 'step-3' && direction === 1) {
+                const dep = document.querySelector('input[name="dependientes"]:checked').value;
+                if (dep === 'no') stepsSequence = stepsSequence.filter(id => id !== 'step-3-1');
+                else if (!stepsSequence.includes('step-3-1')) stepsSequence.splice(3, 0, 'step-3-1');
+            }
+            if (currentStepId === 'step-5' && direction === 1) {
+                const ahorra = document.querySelector('input[name="ahorro_habito"]:checked').value;
+                if (ahorra === 'no') {
+                    stepsSequence = stepsSequence.filter(id => id !== 'step-6' && id !== 'step-6-info');
+                    if (!stepsSequence.includes('step-5-info-no')) stepsSequence.splice(6, 0, 'step-5-info-no');
+                } else {
+                    stepsSequence = stepsSequence.filter(id => id !== 'step-5-info-no');
+                    if (!stepsSequence.includes('step-6')) stepsSequence.splice(6, 0, 'step-6', 'step-6-info');
+                }
+            }
+
+            currentIdx += direction;
+
+            if (currentIdx >= stepsSequence.length) {
+                const finalName = document.getElementById('nombre').value;
+                alert(`¡Excelente elección, ${finalName}! Tus respuestas han sido enviadas a la plataforma de KARE Consultores.`);
+                location.reload();
+                return;
+            }
+
+            const nextStepId = stepsSequence[currentIdx];
+            document.getElementById(nextStepId).classList.add('active');
+
+            document.getElementById('btn-back').style.display = currentIdx === 0 ? 'none' : 'inline-block';
+            document.getElementById('btn-next').innerText = currentIdx === stepsSequence.length - 1 ? 'Finalizar Diagnóstico' : 'Continuar';
+            
+            updateProgressBar();
+        }
+    </script>
+</body>
+</html>
